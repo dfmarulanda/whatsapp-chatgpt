@@ -64,16 +64,15 @@ const start = async () => {
 		cli.printAuthenticationFailure();
 	});
 
-	// WhatsApp ready
-	client.on(Events.READY, () => {
+	client.on(Events.READY, async () => {
 		// Print outro
 		cli.printOutro();
-
 		// Set bot ready timestamp
 		botReadyTimestamp = new Date();
-
+	
 		initAiConfig();
 		initOpenAI();
+
 	});
 
 	// WhatsApp message
