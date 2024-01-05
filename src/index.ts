@@ -69,7 +69,7 @@ const start = async () => {
 		cli.printOutro();
 		// Set bot ready timestamp
 		botReadyTimestamp = new Date();
-	
+
 		initAiConfig();
 		initOpenAI();
 

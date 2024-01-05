@@ -10,24 +10,24 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"aws-sdk": "^2.1467.0",
+		"aws-sdk": "^2.1530.0",
 		"chatgpt": "^5.2.5",
 		"dotenv": "^16.3.1",
 		"fetch-blob": "^4.0.0",
 		"ffmpeg": "^0.0.4",
-		"langchain": "^0.0.212",
+		"langchain": "^0.0.214",
 		"mssql": "^9.3.2",
 		"openai": "^3.3.0",
 		"picocolors": "^1.0.0",
 		"qrcode": "^1.5.3",
-		"typeorm": "^0.3.17",
-		"whatsapp-web.js": "https://github.com/Julzk/whatsapp-web.js/tarball/jkr_hotfix_7"
+		"typeorm": "^0.3.19",
+		"whatsapp-web.js": "https://github.com/Julzk/whatsapp-web.js/tarball/jkr_hotfix_9"
 	},
 	"engines": {
 		"node": ">=18.0.0"
 	},
 	"devDependencies": {
-		"@types/qrcode": "^1.5.2",
+		"@types/qrcode": "^1.5.5",
 		"prettier": "^3.0.3"
 	}
 }
