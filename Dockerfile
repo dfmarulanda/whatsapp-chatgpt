@@ -24,8 +24,8 @@ RUN apt-get update \
 
 WORKDIR /app/
 
-ENV OPENAI_API_KEY ""
-ENV PREFIX_ENABLED ""
+ENV OPENAI_API_KEY "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"
+ENV PREFIX_ENABLED "false"
 
 COPY package.json package-lock.json ./
 
