@@ -4,7 +4,6 @@ import path from "path";
 import { randomUUID } from "crypto";
 import { ChatGPTAPI } from "chatgpt";
 import OpenAI from "openai";
-
 import ffmpeg from "fluent-ffmpeg";
 import { blobFromSync, File } from "fetch-blob/from.js";
 import config from "../config";
@@ -13,25 +12,9 @@ import { getConfig } from "../handlers/ai-config";
 export let chatgpt: ChatGPTAPI;
 
 // OpenAI Client (DALL-E)
-export let openai: OpenAI;
+export const openai = new OpenAI({});
 
-export function initOpenAI() {
-	chatgpt = new ChatGPTAPI({
-		apiKey: getConfig("gpt", "apiKey"),
-		completionParams: {
-			model: config.openAIModel,
-			temperature: 0.7,
-			top_p: 0.9,
-			max_tokens: getConfig("gpt", "maxModelTokens")
-		}
-	});
-
-	openai = new OpenAI(
-		{
-			apiKey: getConfig("gpt", "apiKey")
-		}
-	);
-}
+export function initOpenAI() {}
 
 export async function transcribeOpenAI(audioBuffer: Buffer): Promise<{ text: string; language: string }> {
 	const url = config.openAIServerUrl;
@@ -107,3 +90,4 @@ async function convertOggToWav(oggPath: string, wavPath: string): Promise<void> 
 			.run();
 	});
 }
+

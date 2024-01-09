@@ -3,11 +3,10 @@ import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import { Message, MessageMedia } from "whatsapp-web.js";
-import { chatgpt } from "../providers/openai";
+import { openai, assistant } from "../providers/openai";
 import * as cli from "../cli/ui";
 import config from "../config";
 
-import { ChatMessage } from "chatgpt";
 
 // TTS
 import { ttsRequest as speechTTSRequest } from "../providers/speech";
@@ -23,74 +22,46 @@ import { aiConfig, getConfig } from "./ai-config";
 
 
 // Mapping from number to last conversation id
-const conversations = {};
+let threads = {}; // Dictionary to keep track of user threads
 
 const handleMessageGPT = async (message: Message, prompt: string) => {
-	try {
-		// Get last conversation
-		const lastConversationId = conversations[message.from];
+    try {
+        // Check for existing thread or create a new one
+        let thread = threads[message.from];
+        if (!thread) {
+            thread = await openai.beta.threads.create();
+            threads[message.from] = thread;
+        }
 
-		cli.print(`[GPT] Received prompt from ${message.from}: ${prompt}`);
+        // Add user message to thread
+        await openai.beta.threads.messages.create(thread.id, {
+            role: "user",
+            content: prompt
+        });
 
-		// Prompt Moderation
-		if (config.promptModerationEnabled) {
-			try {
-				await moderateIncomingPrompt(prompt);
-			} catch (error: any) {
-				message.reply(error.message);
-				return;
-			}
-		}
+        // Run the assistant
+        const run = await openai.beta.threads.runs.create(thread.id, { assistant_id: "asst_teHcjyezKEmHHAfNcNLdQTGA" });
 
-		const start = Date.now();
+        // Check the run status (optional: implement a loop to wait for completion)
+        // ...
 
-		// Check if we have a conversation with the user
-		let response: ChatMessage;
-		if (lastConversationId) {
-			// Handle message with previous conversation
-			response = await chatgpt.sendMessage(prompt, {
-				parentMessageId: lastConversationId
-			});
-		} else {
-			let promptBuilder = "";
+        // Retrieve and display the assistant's response
+        const messages = await openai.beta.threads.messages.list(thread.id);
+        const assistantMessages = messages.data.filter(msg => msg.role === 'assistant');
+        assistantMessages.forEach(msg => {
+            message.reply(String(msg.content[0].text.value));
+        });
 
-			// Pre prompt
-			if (config.prePrompt != null && config.prePrompt.trim() != "") {
-				promptBuilder += config.prePrompt + "\n\n";
-				promptBuilder += prompt + "\n\n";
-			}
-
-			// Handle message with new conversation
-			response = await chatgpt.sendMessage(promptBuilder);
-
-			cli.print(`[GPT] New conversation for ${message.from} (ID: ${response.id})`);
-		}
-		
-		// Set conversation id
-		conversations[message.from] = response.id;
-
-		const end = Date.now() - start;
-
-		cli.print(`[GPT] Answer to ${message.from}: ${response.text}  | OpenAI request took ${end}ms)`);
-
-		// TTS reply (Default: disabled)
-		if (getConfig("tts", "enabled")) {
-			sendVoiceMessageReply(message, response.text);
-			message.reply(response.text);
-			return;
-		}
-
-		// Default: Text reply
-		message.reply(response.text);
-	} catch (error: any) {
-		console.error("An error occured", error);
-		message.reply("An error occured, please contact the administrator. (" + error.message + ")");
-	}
+    } catch (error) {
+        console.error("An error occurred", error);
+        //message.reply("An error occurred, please contact the administrator. (" + error.message + ")");
+    }
 };
+
 
 const handleDeleteConversation = async (message: Message) => {
 	// Delete conversation
-	delete conversations[message.from];
+	delete threads[message.from];
 
 	// Reply
 	message.reply("Conversation context was resetted!");
